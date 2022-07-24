@@ -7,6 +7,7 @@ import cv2
 from PIL import Image
 from tqdm import tqdm
 
+resize_rate = 500
 def reshape_multiview_tensors(image_tensor, calib_tensor):
     # Careful here! Because we put single view and multiview together,
     # the returned tensor.shape is 5-dim: [B, num_views, C, W, H]
@@ -65,7 +66,7 @@ def gen_mesh(opt, net, cuda, data, save_path, use_octree=True):
         uv = xyz_tensor[:, :2, :]
         color = index(image_tensor[:1], uv).detach().cpu().numpy()[0].T
         color = color * 0.5 + 0.5
-        save_obj_mesh_with_color(save_path, verts, faces, color)
+        save_obj_mesh_with_color(save_path, verts * resize_rate, faces, color)
     except Exception as e:
         print(e)
         print('Can not create marching cubes at this time.')
@@ -106,7 +107,7 @@ def gen_mesh_color(opt, netG, netC, cuda, data, save_path, use_octree=True):
             rgb = netC.get_preds()[0].detach().cpu().numpy() * 0.5 + 0.5
             color[left:right] = rgb.T
 
-        save_obj_mesh_with_color(save_path, verts, faces, color)
+        save_obj_mesh_with_color(save_path, verts * resize_rate, faces, color)
     except Exception as e:
         print(e)
         print('Can not create marching cubes at this time.')
